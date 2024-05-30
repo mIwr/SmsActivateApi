@@ -21,6 +21,10 @@
 	<PackageTags>SMS,Activate,SMS-Activate,API</PackageTags>
 	<SignAssembly>False</SignAssembly>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<Version>$(AssemblyVersion)</Version>
+	<Authors>mIwr</Authors>
+	<Product>SMS Activate API</Product>
+	<RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
