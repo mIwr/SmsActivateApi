@@ -1,0 +1,200 @@
+name: Publish to NuGet and release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "**/*.cs"
+      - "**/*.csproj"
+
+concurrency:
+  group: proj-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  unit_tests:
+    name: Unit tests
+    env:
+      API_TOKEN: ${{ secrets.SA_API_TOKEN }}
+    runs-on: ubuntu-latest
+    outputs:
+      release_ver: ${{ steps.app_proj_version.outputs.assembly-version }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.x'
+      - name: Parse app csproj version
+        id: app_proj_version
+        uses: kzrnm/get-net-sdk-project-versions-action@v1
+        with:
+          proj-path: SMSActivate.API/SMSActivate.API.csproj
+      - name: Prepare 
+        run: echo 'namespace SMSActivate.API.Tests {internal static class TestCredentials {internal const string ApiToken = "${{env.API_TOKEN}}";}}' > SMSActivate.API.Tests/TestCredentials.cs
+      - name: Launch tests
+        run: dotnet test --nologo
+        
+  build_win_x64:
+    name: Build Windows x64 release and upload artifact
+    needs: unit_tests
+    runs-on: ubuntu-latest
+    env:
+      BUILD_ARCH: win-x64
+      BUILD_DIR: ./build/SMSActivate.API/Release/net6.0/win-x64
+      BUILD_ARTIFACTS: sapi.dll
+      ZIP_FILE: sapi_win-x64.zip
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.x'
+          
+      - name: Build artifact
+        run: dotnet build SMSActivate.API/SMSActivate.API.csproj -r ${{env.BUILD_ARCH}} -c Release
+        
+      - name: Zip artifact
+        run: cd ${{env.BUILD_DIR}} && zip ${{env.ZIP_FILE}} ${{env.BUILD_ARTIFACTS}}
+        
+      - name: Upload zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{env.BUILD_ARCH}}
+          path: ${{env.BUILD_DIR}}/${{env.ZIP_FILE}}
+          
+  build_linux_x64:
+    name: Build Linux x64 release and upload artifact
+    needs: unit_tests
+    runs-on: ubuntu-latest
+    env:
+      BUILD_ARCH: linux-x64
+      BUILD_DIR: ./build/SMSActivate.API/Release/net6.0/linux-x64
+      #BUILD_ARTIFACTS: sapi.so
+      BUILD_ARTIFACTS: sapi.dll
+      ZIP_FILE: sapi_linux-x64.zip
+     
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.x'
+         
+      - name: Build artifact
+        run: dotnet build SMSActivate.API/SMSActivate.API.csproj -r ${{env.BUILD_ARCH}} -c Release
+       
+      - name: Zip artifact
+        run: cd ${{env.BUILD_DIR}} && zip ${{env.ZIP_FILE}} ${{env.BUILD_ARTIFACTS}}
+        
+      - name: Upload zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{env.BUILD_ARCH}}
+          path: ${{env.BUILD_DIR}}/${{env.ZIP_FILE}}
+
+  nuget_publish:
+    name: Build, pack and nuget publish
+    needs:
+      - unit_tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.x'
+
+      - name: NuGet publish
+        id: nuget_worker
+        uses: alirezanet/publish-nuget@v3.1.0
+        with:
+          # Filepath of the project to be packaged, relative to root of repository
+          PROJECT_FILE_PATH: SMSActivate.API/SMSActivate.API.csproj
+
+          # NuGet package id, used for version detection & defaults to project name
+          # PACKAGE_NAME: SMSActivate.API
+
+          # Filepath with version info, relative to root of repository & defaults to PROJECT_FILE_PATH
+          # VERSION_FILE_PATH: Directory.Build.props
+
+          # Regex pattern to extract version info in a capturing group
+          # Version>([\d]+(.[\d]+)*)<\/\w*Version>$ - NET Core csproj regex
+          VERSION_REGEX: Version>([\d]+(.[\d]+)*)<\/\w*Version>$
+
+          # Useful with external providers like Nerdbank.GitVersioning, ignores VERSION_FILE_PATH & VERSION_REGEX
+          # VERSION_STATIC: 1.0.0
+
+          # Flag to toggle git tagging, enabled by default
+          TAG_COMMIT: false
+
+          # Format of the git tag, [*] gets replaced with actual version
+          # TAG_FORMAT: v*
+
+          # API key to authenticate with NuGet server
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+
+          # NuGet server uri hosting the packages, defaults to https://api.nuget.org
+          # NUGET_SOURCE: https://api.nuget.org
+
+          # Flag to toggle pushing symbols along with nuget package to the server, disabled by default
+          INCLUDE_SYMBOLS: false    
+
+  git_release_draft:
+    name: Make Github release draft
+    needs:
+      - unit_tests
+      - build_win_x64
+      - build_linux_x64
+    env:
+      GITHUB_TOKEN: ${{ secrets.RELEASE_BUILD_TOKEN }}
+      RELEASE_VERSION: ${{ needs.unit_tests.outputs.release_ver }}
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: ${{ github.event.repository.name }} ${{ env.RELEASE_VERSION }}
+          draft: true
+          
+  github_upload_release_artifacts:
+    name: Upload build artifacts to GIthub release
+    needs:
+      - unit_tests
+      - git_release_draft
+    env:
+      GITHUB_TOKEN: ${{ secrets.RELEASE_BUILD_TOKEN }}
+      RELEASE_VERSION: ${{ needs.unit_tests.outputs.release_ver }}
+      UPLOAD_URL: ${{ needs.git_release_draft.outputs.upload_url }}
+    runs-on: ubuntu-latest
+    
+    steps: 
+      - name: Download win-x64 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: win-x64
+          
+      - name: Upload win-x64 artifact to release assets
+        uses: actions/upload-release-asset@v1.0.1
+        with:
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: sapi_win-x64.zip
+          asset_name: ${{ github.event.repository.name }} ${{ env.RELEASE_VERSION }}_win-x64.zip
+          asset_content_type: application/zip
+          
+      - name: Download linux-x64 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: linux-x64
+          
+      - name: Upload linux-x64 artifact to release assets
+        uses: actions/upload-release-asset@v1.0.1
+        with:
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: sapi_linux-x64.zip
+          asset_name: ${{ github.event.repository.name }} ${{ env.RELEASE_VERSION }}_linux-x64.zip
+          asset_content_type: application/zip    

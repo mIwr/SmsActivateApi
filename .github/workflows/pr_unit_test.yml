@@ -1,0 +1,26 @@
+name: Testing on PRs to master branch
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "**/*.cs"
+
+jobs:
+  unit_tests:
+    name: Unit tests
+    env:
+      API_TOKEN: ${{ secrets.SA_API_TOKEN }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.x'          
+          namespace: SMSActivate.API.Tests
+      - name: Prepare 
+        run: echo 'namespace SMSActivate.API.Tests {internal static class TestCredentials {internal const string ApiToken = "${{env.API_TOKEN}}";}}' > SMSActivate.API.Tests/TestCredentials.cs
+      - name: Launch tests
+        run: dotnet test --nologo

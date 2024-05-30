@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>sapi</AssemblyName>
+    <RootNamespace>SmsActivate.API</RootNamespace>
+    <PackageId>SMSActivate.API</PackageId>
+    <Title>SMS Activate API</Title>
+    <AssemblyVersion>1.2.4.7</AssemblyVersion>
+    <FileVersion>1.2.4.7</FileVersion>
+    <BaseOutputPath>../build/$(MSBuildProjectName)/</BaseOutputPath>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+	<Description>SMS Activate API</Description>
+	<PackageProjectUrl>https://github.com/mIwr/SmsActivateApi</PackageProjectUrl>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryUrl>https://github.com/mIwr/SmsActivateApi</RepositoryUrl>
+	<PackageTags>SMS,Activate,SMS-Activate,API</PackageTags>
+	<SignAssembly>False</SignAssembly>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

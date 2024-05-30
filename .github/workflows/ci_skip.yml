@@ -1,0 +1,21 @@
+name: ci_build_skip
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - ".github/workflows/**"
+      - "**/*.cs"
+      - "**/*.csproj"
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - ".github/workflows/**"
+      - "**/*.cs" 
+      - "**/*.csproj"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No build required"'
