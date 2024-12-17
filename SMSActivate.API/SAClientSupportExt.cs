@@ -15,7 +15,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the contries list</returns>
         public async Task<Result<Dictionary<ushort, SACountryShort>, ApiError>> GetCountriesShort(string language = "en")
         {
-            var res = await ApiSupport.GetCountriesShort(language);
+            var res = await _llClient.GetCountriesShort(language);
             var payload = res.Data;
             if (payload != null && payload.Count > 0 && CachedActivationServicesInfo.Count == 0)
             {
@@ -36,7 +36,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the contries list</returns>
         public async Task<Result<Dictionary<ushort, SACountry>, ApiError>> GetCountries()
         {
-            var res = await ApiSupport.GetCountries();
+            var res = await _llClient.GetCountries();
             var payload = res.Data;
             if (payload != null && payload.Count > 0)
             {
@@ -51,7 +51,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the services list</returns>
         public async Task<Result<Dictionary<string, SAActivationService>, ApiError>> GetServices()
         {
-            var res = await ApiSupport.GetServices();
+            var res = await _llClient.GetServices();
             var payload = res.Data;
             if (payload != null && payload.Count > 0)
             {
@@ -66,7 +66,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the operators list</returns>
         public async Task<Result<Dictionary<string, SAOperator>, ApiError>> GetOperators()
         {
-            var res = await ApiSupport.GetOperators();
+            var res = await _llClient.GetOperators();
             var payload = res.Data;
             if (payload == null)
             {
@@ -79,7 +79,7 @@ namespace SmsActivate.API
                 }
                 Trace.WriteLine("Request operators info in stock mode");
 #endif
-                res = await ApiSupport.GetOperators(Token);
+                res = await _llClient.GetOperators(Token);
                 payload = res.Data;
                 if (payload != null && payload.Count > 0)
                 {
@@ -106,7 +106,7 @@ namespace SmsActivate.API
                 return new Result<Dictionary<ushort, SAActivationServiceOfferV2>, ApiError>(error: ApiErrorEnum.BadService.AsException(apiResponse: string.Empty));
             }
             var iforward = forward ? 1 : 0;
-            return await ApiSupport.GetCountriesForActivationServiceV2(serviceId, iforward);
+            return await _llClient.GetCountriesForActivationServiceV2(serviceId, iforward);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace SmsActivate.API
                 return new Result<Dictionary<ushort, SAActivationServiceOfferV3>, ApiError>(error: ApiErrorEnum.BadService.AsException(apiResponse: string.Empty));
             }
             var iforward = forward ? 1 : 0;
-            return await ApiSupport.GetCountriesForAcrivationServiceV3(serviceId, iforward, freePrice);
+            return await _llClient.GetCountriesForAcrivationServiceV3(serviceId, iforward, freePrice);
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace SmsActivate.API
                 return new Result<Dictionary<string, SARentServiceOffer>, ApiError>(error: ApiErrorEnum.BadCountry.AsException(apiResponse: string.Empty));
             }
             var rentHours = rentDuration.TotalHours();
-            var res = await ApiSupport.GetRentServiceOffers(rentHours, countryId);
+            var res = await _llClient.GetRentServiceOffers(rentHours, countryId);
             var payload = res.Data;
             if (payload != null && payload.Count > 0)
             {
@@ -170,7 +170,7 @@ namespace SmsActivate.API
                 return new Result<Dictionary<string, SARentServiceOffer>, ApiError>(error: ApiErrorEnum.BadCountry.AsException(apiResponse: string.Empty));
             }
             var rentHours = rentDuration.TotalHours();
-            var res = await ApiSupport.GetRentServiceShortOffers(rentHours, countryId, serviceId);
+            var res = await _llClient.GetRentServiceShortOffers(rentHours, countryId, serviceId);
             var payload = res.Data;
             if (payload != null && payload.Count > 0)
             {

@@ -8,8 +8,8 @@
     <RootNamespace>SmsActivate.API</RootNamespace>
     <PackageId>SMSActivate.API</PackageId>
     <Title>SMS Activate API</Title>
-    <AssemblyVersion>1.2.4.7</AssemblyVersion>
-    <FileVersion>1.2.4.7</FileVersion>
+    <AssemblyVersion>1.2.5.8</AssemblyVersion>
+    <FileVersion>1.2.5.8</FileVersion>
     <BaseOutputPath>../build/$(MSBuildProjectName)/</BaseOutputPath>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>

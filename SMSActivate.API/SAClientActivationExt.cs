@@ -16,7 +16,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the account active activations</returns>
         public async Task<Result<SAActivationDetailed[], ApiError>> GetProfileActiveActivations()
         {
-            var res = await ApiActivation.GetProfileActiveActivations(Token);
+            var res = await _llClient.GetProfileActiveActivations(Token);
             var activations = res.Data;
             if (activations != null)
             {
@@ -45,7 +45,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the account active activations batch</returns>
         public async Task<Result<SAActivationBatch, ApiError>> GetProfileActiveActivationsPaged(uint start = 0, uint length = 50)
         {
-            var res = await ApiActivation.GetProfileActiveActivationsPaged(Token, start, length);
+            var res = await _llClient.GetProfileActiveActivationsPaged(Token, start, length);
             var batch = res.Data;
             if (batch != null)
             {
@@ -85,7 +85,7 @@ namespace SmsActivate.API
             {
                 return new Result<SAActivation, ApiError>(error: ApiErrorEnum.BadCountry.AsException(apiResponse: string.Empty));
             }
-            var res = await ApiActivation.RequestNewActivation(Token, serviceId, countryId, maxPrice, verificationCall, operatorIds, forward, useCashBack);
+            var res = await _llClient.RequestNewActivation(Token, serviceId, countryId, maxPrice, verificationCall, operatorIds, forward, useCashBack);
             var activation = res.Data;
             if (activation != null)
             {
@@ -116,7 +116,7 @@ namespace SmsActivate.API
             {
                 return new Result<SAActivation, ApiError>(error: ApiErrorEnum.BadCountry.AsException(apiResponse: string.Empty));
             }
-            var res = await ApiActivation.RequestNewActivationV2(Token, serviceId, countryId, maxPrice, verificationCall, operatorIds, forward);            
+            var res = await _llClient.RequestNewActivationV2(Token, serviceId, countryId, maxPrice, verificationCall, operatorIds, forward);            
             var activation = res.Data;
             if (activation == null)
             {
@@ -129,7 +129,7 @@ namespace SmsActivate.API
                 }
                 Trace.WriteLine("Request activation in legacy mode");
 #endif
-                res = await ApiActivation.RequestNewActivation(Token, serviceId, countryId, maxPrice, verificationCall, operatorIds, forward, useCashBack);
+                res = await _llClient.RequestNewActivation(Token, serviceId, countryId, maxPrice, verificationCall, operatorIds, forward, useCashBack);
                 activation = res.Data;
                 if (activation != null)
                 {
@@ -150,7 +150,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the activation status and SMS code</returns>
         public async Task<Result<KeyValuePair<SAActivationStatus, string?>, ApiError>> GetActivationStatusWithSMS(long activationId)
         {
-            var res = await ApiActivation.GetActivationStatusWithSms(Token, activationId);
+            var res = await _llClient.GetActivationStatusWithSms(Token, activationId);
             var pair = res.Data;
             if (res.Error == null && Activations.ContainsKey(activationId))
             {
@@ -323,7 +323,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the new activation status</returns>
         public async Task<Result<SAActivationStatus, ApiError>> SetActivationStatus(long activationId, byte apiCode)
         {
-            var res = await ApiActivation.SetActivationStatus(Token, activationId, apiCode);
+            var res = await _llClient.SetActivationStatus(Token, activationId, apiCode);
             var status = res.Data;
             if (Activations.ContainsKey(activationId))
             {
