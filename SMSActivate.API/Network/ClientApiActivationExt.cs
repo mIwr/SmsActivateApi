@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace SmsActivate.API.Network
 {
-    internal static class ApiActivation
+    internal partial class Client
     {
         internal const string ACCESS = "ACCESS";
 
-        internal static async Task<Result<SAActivationDetailed[], ApiError>> GetProfileActiveActivations(string token)
+        internal async Task<Result<SAActivationDetailed[], ApiError>> GetProfileActiveActivations(string token)
         {
             var target = ApiTarget.ProfileActiveActivations;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["api_key"] = token
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -62,17 +62,17 @@ namespace SmsActivate.API.Network
             return new Result<SAActivationDetailed[], ApiError>(res.ToArray());
         }
 
-        internal static async Task<Result<SAActivationBatch, ApiError>> GetProfileActiveActivationsPaged(string token, uint start, uint length)
+        internal async Task<Result<SAActivationBatch, ApiError>> GetProfileActiveActivationsPaged(string token, uint start, uint length)
         {
             //&start=0&length=50&activationType=0
             var target = ApiTarget.ProfileActiveActivationsPaged;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["api_key"] = token,
                 ["start"] = start,
                 ["length"] = length
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -88,7 +88,7 @@ namespace SmsActivate.API.Network
             return new Result<SAActivationBatch, ApiError>(data: batch);
         }
 
-        internal static async Task<Result<SAActivation, ApiError>> RequestNewActivation(string token, string service, ushort country, double maxPrice, bool verificationCall, string[]? operatorIds, bool forward, bool useCashBack)
+        internal async Task<Result<SAActivation, ApiError>> RequestNewActivation(string token, string service, ushort country, double maxPrice, bool verificationCall, string[]? operatorIds, bool forward, bool useCashBack)
         {
             //service=$service&forward=$forward&operator=$operator&ref=$ref&country=$country&phoneException=$phoneException&maxPrice=maxPrice&verification=$verification&useCashBack=$useCashBack
             var target = ApiTarget.NewActivation;
@@ -123,8 +123,8 @@ namespace SmsActivate.API.Network
             {
                 reqParams["useCashBack"] = useCashBack;
             }
-            var request = Client.BuildRequest(target, reqParams);
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var request = BuildRequest(target, reqParams);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -135,9 +135,9 @@ namespace SmsActivate.API.Network
             {
                 return new Result<SAActivation, ApiError>(error: ApiErrorEnum.NoResponse.AsException(apiResponse: string.Empty));
             }
-            if (!dat.StartsWith(ApiActivation.ACCESS))
+            if (!dat.StartsWith(ACCESS))
             {
-                return new Result<SAActivation, ApiError>(error: ApiErrorEnum.BadResponse.AsException(apiResponse: dat, message: "Response doesn't start from '" + ApiActivation.ACCESS + "' keyword"));
+                return new Result<SAActivation, ApiError>(error: ApiErrorEnum.BadResponse.AsException(apiResponse: dat, message: "Response doesn't start from '" + ACCESS + "' keyword"));
             }
             string[] parts = dat.Split(':');
             if (parts.Length < 2)
@@ -156,7 +156,7 @@ namespace SmsActivate.API.Network
             return new Result<SAActivation, ApiError>(data: new SAActivation(id, phone, SAActivationStatus.WAIT_CODE, country, service, canGetAnotherSms: false, cost: 0.0, createTsUTC: DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
         }        
 
-        internal static async Task<Result<SAActivation, ApiError>> RequestNewActivationV2(string token, string service, ushort country, double maxPrice, bool verificationCall, string[]? operatorIds, bool forward)
+        internal async Task<Result<SAActivation, ApiError>> RequestNewActivationV2(string token, string service, ushort country, double maxPrice, bool verificationCall, string[]? operatorIds, bool forward)
         {
             //&forward=$forward&operator=$operator&ref=$ref&phoneException=$phoneException&maxPrice=maxPrice&verification=$verification
             var target = ApiTarget.NewActivationV2;
@@ -187,8 +187,8 @@ namespace SmsActivate.API.Network
             {
                 reqParams["forward"] = forward;
             }
-            var request = Client.BuildRequest(target, reqParams);            
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var request = BuildRequest(target, reqParams);            
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -208,15 +208,15 @@ namespace SmsActivate.API.Network
             return new Result<SAActivation, ApiError>(new SAActivation(parsed.ID, parsed.Phone, status: SAActivationStatus.WAIT_CODE, country, service, parsed.CanGetAnotherSMS, parsed.Cost, parsed.CreateTsUTC));
         }
 
-        internal static async Task<Result<KeyValuePair<SAActivationStatus, string?>, ApiError>> GetActivationStatusWithSms(string token, long activationId)
+        internal async Task<Result<KeyValuePair<SAActivationStatus, string?>, ApiError>> GetActivationStatusWithSms(string token, long activationId)
         {
             var target = ApiTarget.ActivationStatus;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["api_key"] = token,
                 ["id"] = activationId
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -250,16 +250,16 @@ namespace SmsActivate.API.Network
             return new Result<KeyValuePair<SAActivationStatus, string?>, ApiError>(data: new KeyValuePair<SAActivationStatus, string?>(status.Value, code));
         }
 
-        internal static async Task<Result<SAActivationStatus, ApiError>> SetActivationStatus(string token, long activationId, byte newStatus)
+        internal async Task<Result<SAActivationStatus, ApiError>> SetActivationStatus(string token, long activationId, byte newStatus)
         {
             var target = ApiTarget.ActivationStatusChange;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["api_key"] = token,
                 ["id"] = activationId,
                 ["status"] = newStatus
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {

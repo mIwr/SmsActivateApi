@@ -13,7 +13,7 @@ namespace SmsActivate.API
         /// <returns>API response result with the account balance info</returns>
         public async Task<Result<double, ApiError>> GetProfileBalance()
         {
-            var res = await ApiProfile.GetProfileBalance(Token);
+            var res = await _llClient.GetProfileBalance(Token);
             return res;
         }
 
@@ -25,7 +25,7 @@ namespace SmsActivate.API
         /// <returns>Account balance and cashback info</returns>
         public async Task<Result<SAProfileBalance, ApiError>> GetLegacyProfileBalanceAndCashback()
         {
-            var res = await ApiProfile.GetProfileBalanceAndCashBack(Token);
+            var res = await _llClient.GetProfileBalanceAndCashBack(Token);
             return res;
         }
 #endif
@@ -36,7 +36,7 @@ namespace SmsActivate.API
         /// <returns>Account balance and cashback info</returns>
         public async Task<Result<SAProfileBalance, ApiError>> GetProfileBalanceAndCashback()
         {
-            var responseRes = await ApiProfile.GetProfileBalanceAndCashBackV2(Token);
+            var responseRes = await _llClient.GetProfileBalanceAndCashBackV2(Token);
             var err = responseRes.Error;
             if (err != null)
             {
@@ -45,7 +45,7 @@ namespace SmsActivate.API
                 Trace.WriteLine(err);
                 Trace.WriteLine("Get legacy profile balance with cashback");
 #endif
-                responseRes = await ApiProfile.GetProfileBalanceAndCashBack(Token);
+                responseRes = await _llClient.GetProfileBalanceAndCashBack(Token);
             }
 
             return responseRes;

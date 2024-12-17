@@ -1,25 +1,24 @@
 ﻿using SmsActivate.API.Model;
 using SmsActivate.API.Util;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SmsActivate.API.Network
 {
-    internal static class ApiProfile
+    internal partial class Client
     {
         private const string REGEX_PATTERN = "\\d+(?:[\\.,]\\d+)?";
 
-        internal static async Task<Result<double, ApiError>> GetProfileBalance(string token)
+        internal async Task<Result<double, ApiError>> GetProfileBalance(string token)
         {
             var target = ApiTarget.ProfileBalance;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["api_key"] = token,
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -43,7 +42,7 @@ namespace SmsActivate.API.Network
             return new Result<double, ApiError>(balance);
         }
 
-        internal static async Task<Result<SAProfileBalance, ApiError>> GetProfileBalanceAndCashBack(string token)
+        internal async Task<Result<SAProfileBalance, ApiError>> GetProfileBalanceAndCashBack(string token)
         {
             var balanceRes = await GetProfileBalance(token);
             var balance = balanceRes.Data;
@@ -53,11 +52,11 @@ namespace SmsActivate.API.Network
                 return new Result<SAProfileBalance, ApiError>(err);
             }
             var target = ApiTarget.ProfileBalanceAndCashBack;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["api_key"] = token,
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             err = response.Error;
             if (err != null)
             {
@@ -83,14 +82,14 @@ namespace SmsActivate.API.Network
             return new Result<SAProfileBalance, ApiError>(res);
         }
 
-        internal static async Task<Result<SAProfileBalance, ApiError>> GetProfileBalanceAndCashBackV2(string token)
+        internal async Task<Result<SAProfileBalance, ApiError>> GetProfileBalanceAndCashBackV2(string token)
         {
             var target = ApiTarget.ProfileBalanceAndCashBackV2;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["api_key"] = token,
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {

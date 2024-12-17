@@ -11,15 +11,43 @@ using System.Diagnostics;
 
 namespace SmsActivate.API.Network
 {
-    internal class Client
+    internal partial class Client
     {
+        internal const string SADefaultHost = "sms-activate.guru/";//Blocked - sms-activate.org
+        internal const string SADefaultApiHost = "api.sms-activate.ae/";//Blocked - api.sms-activate.org
+
         protected HttpClient ApiClient;
         protected int CountRequest;
-        private Dictionary<string, IWebClientListener> _webClientListeners;
-        private Dictionary<string, IExceptionListener> _exceptionListeners;
+        private string _host;
+        private string _apiHost;
+        private readonly Dictionary<string, IWebClientListener> _webClientListeners;
+        private readonly Dictionary<string, IExceptionListener> _exceptionListeners;
+
+        protected string BaseUrl
+        {
+            get { return "https://" + _host; }
+        }
+
+        protected string ApiBaseUrl
+        {
+            get
+            {
+                return "https://" + _apiHost;
+            }
+        }
+
+        protected string ReserveApiBaseUrl
+        {
+            get
+            {
+                return "https://api." + _host;
+            }
+        }
 
         internal Client()
         {
+            _host = SADefaultHost;
+            _apiHost = SADefaultApiHost;
             ApiClient = new HttpClient();
             _webClientListeners = new Dictionary<string, IWebClientListener>();
             _exceptionListeners = new Dictionary<string, IExceptionListener>();
@@ -59,9 +87,44 @@ namespace SmsActivate.API.Network
             return _exceptionListeners.Remove(id);
         }
 
-        internal static HttpRequestMessage BuildRequest(ApiTarget target, Dictionary<string, dynamic>? additionalReqParameters = null, HttpContent? bodyContent = null)
+        internal bool SetHost(string host)
         {
-            var urlBuilder = new UriBuilder(target.BaseUrl() + target.ReqPath());
+            if (string.IsNullOrEmpty(host))
+            {
+                return false;
+            }
+            var str = host.Replace("https://", "");
+            if (!str.EndsWith('/'))
+            {
+                str += '/';
+            }
+            _host = str;
+            return true;
+        }
+
+        internal bool SetApiHost(string apiHost)
+        {
+            if (string.IsNullOrEmpty(apiHost))
+            {
+                return false;
+            }
+            var str = apiHost.Replace("https://", "");
+            if (!str.EndsWith('/'))
+            {
+                str += '/';
+            }
+            _apiHost = str;
+            return true;
+        }
+
+        internal HttpRequestMessage BuildRequest(ApiTarget target, Dictionary<string, dynamic>? additionalReqParameters = null, HttpContent? bodyContent = null)
+        {
+            var baseUrl = BaseUrl;
+            if (target.UseApiBaseUrl())
+            {
+                baseUrl = ApiBaseUrl;
+            }
+            var urlBuilder = new UriBuilder(baseUrl + target.ReqPath());
             var request = new HttpRequestMessage
             {
                 Method = target.Method()

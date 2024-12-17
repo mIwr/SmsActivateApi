@@ -5,7 +5,7 @@ namespace SmsActivate.API.Network
     internal static class ApiHttpMethod
     {
         private const string _getMethod = "GET";
-        private const string _postMethod = "POST";
+        //private const string _postMethod = "POST";
 
         internal static string MethodString(this ApiTarget target)
         {

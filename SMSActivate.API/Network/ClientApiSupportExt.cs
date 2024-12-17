@@ -2,19 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SmsActivate.API.Network
 {
-    internal static class ApiSupport
+    internal partial class Client
     {
-        internal static async Task<Result<Dictionary<ushort, SACountry>, ApiError>> GetCountries()
+        internal async Task<Result<Dictionary<ushort, SACountry>, ApiError>> GetCountries()
         {
             var target = ApiTarget.Countries;
-            var request = Client.BuildRequest(target);            
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var request = BuildRequest(target);            
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -42,14 +41,14 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<ushort, SACountry>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<ushort, SACountryShort>, ApiError>> GetCountriesShort(string language)
+        internal async Task<Result<Dictionary<ushort, SACountryShort>, ApiError>> GetCountriesShort(string language)
         {
             var target = ApiTarget.CountriesShort;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["lang"] = language
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -82,11 +81,11 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<ushort, SACountryShort>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<string, SAOperator>, ApiError>> GetOperators()
+        internal async Task<Result<Dictionary<string, SAOperator>, ApiError>> GetOperators()
         {
             var target = ApiTarget.OperatorsWeb;
-            var request = Client.BuildRequest(target);
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var request = BuildRequest(target);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -143,7 +142,7 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<string, SAOperator>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<string, SAOperator>, ApiError>> GetOperators(string apiToken, string? countryId = null)
+        internal async Task<Result<Dictionary<string, SAOperator>, ApiError>> GetOperators(string apiToken, string? countryId = null)
         {
             var additionaLReqParams = new Dictionary<string, string>
             {
@@ -154,8 +153,8 @@ namespace SmsActivate.API.Network
                 additionaLReqParams["country"] = countryId;
             }
             var target = ApiTarget.OperatorsWeb;
-            var request = Client.BuildRequest(target);
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var request = BuildRequest(target);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -233,11 +232,11 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<string, SAOperator>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<string, SAActivationService>, ApiError>> GetServices()
+        internal async Task<Result<Dictionary<string, SAActivationService>, ApiError>> GetServices()
         {
             var target = ApiTarget.Services;
-            var request = Client.BuildRequest(target);
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var request = BuildRequest(target);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -283,15 +282,15 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<string, SAActivationService>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<ushort, SAActivationServiceOfferV2>, ApiError>> GetCountriesForActivationServiceV2(string serviceId, int forward)
+        internal async Task<Result<Dictionary<ushort, SAActivationServiceOfferV2>, ApiError>> GetCountriesForActivationServiceV2(string serviceId, int forward)
         {
             var target = ApiTarget.ActivationServiceCountryOffersV2;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["service"] = serviceId,
                 ["forward"] = forward
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -343,16 +342,16 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<ushort, SAActivationServiceOfferV2>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<ushort, SAActivationServiceOfferV3>, ApiError>> GetCountriesForAcrivationServiceV3(string serviceId, int forward, bool freePrice)
+        internal async Task<Result<Dictionary<ushort, SAActivationServiceOfferV3>, ApiError>> GetCountriesForAcrivationServiceV3(string serviceId, int forward, bool freePrice)
         {
             var target = ApiTarget.ActivationServiceCountryOffersV3;
-            var request = Client.BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
+            var request = BuildRequest(target, additionalReqParameters: new Dictionary<string, dynamic>
             {
                 ["service"] = serviceId,
                 ["forward"] = forward,
                 ["freePrice"] = freePrice
             });
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -387,7 +386,7 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<ushort, SAActivationServiceOfferV3>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<string, SARentServiceOffer>, ApiError>> GetRentServiceOffers(ushort rentHours, ushort? countryId)
+        internal async Task<Result<Dictionary<string, SARentServiceOffer>, ApiError>> GetRentServiceOffers(ushort rentHours, ushort? countryId)
         {
             var target = ApiTarget.RentServiceOffers;
             var reqParams = new Dictionary<string, dynamic>
@@ -398,9 +397,9 @@ namespace SmsActivate.API.Network
             {
                 reqParams.Add("country", countryId);
             }
-            var request = Client.BuildRequest(target, reqParams);
+            var request = BuildRequest(target, reqParams);
             
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {
@@ -445,7 +444,7 @@ namespace SmsActivate.API.Network
             return new Result<Dictionary<string, SARentServiceOffer>, ApiError>(res);
         }
 
-        internal static async Task<Result<Dictionary<string, SARentServiceOffer>, ApiError>> GetRentServiceShortOffers(ushort rentHours, ushort? countryId, string? serviceId)
+        internal async Task<Result<Dictionary<string, SARentServiceOffer>, ApiError>> GetRentServiceShortOffers(ushort rentHours, ushort? countryId, string? serviceId)
         {
             var target = ApiTarget.RentServiceShortOffers;
             var reqParams = new Dictionary<string, dynamic>
@@ -461,8 +460,8 @@ namespace SmsActivate.API.Network
                 reqParams.Add("service", serviceId);
             }
 
-            var request = Client.BuildRequest(target, reqParams);
-            var response = await GlobalEnv.ApiClient.RequestAsGenResponse(request);
+            var request = BuildRequest(target, reqParams);
+            var response = await RequestAsGenResponse(request);
             var err = response.Error;
             if (err != null)
             {

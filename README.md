@@ -18,7 +18,7 @@ Unofficial SMS-Activate API client
 
 The library provides an interface for interacting with the SMS Activate API
 
-Built with [public](https://sms-activate.org/api2), [old JAVA](https://github.com/sms-activate/SMSActivateApi) and decompiled internal (Flutter mobile client) APIs.
+Built with [public](sms-activate.guru/en/api2), [old JAVA](https://github.com/sms-activate/SMSActivateApi) and decompiled internal (Flutter mobile client) APIs.
 For now supports only the SMS activations
 
 ## Setup
@@ -29,7 +29,7 @@ You can install this package via:
 - Precompiled binaries from release
 - Build a project yourself
 
-Next you need to get or generate the [SMS Activate API token](https://sms-activate.org/en/profile)
+Next you need to get or generate the [SMS Activate API token](https://sms-activate.guru/en/profile)
 
 **Notice: You can init API client without token and use some anonymous methods**
 
